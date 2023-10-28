@@ -29,7 +29,7 @@ type Transaction = {
   credit: string
 };
 
-type CleanTransaction = {
+type GroupedTransaction = {
   transactionDate: string,
   descriptions: string[],
   debits: string[],
@@ -42,7 +42,7 @@ type SheetsRow = {
 }
 
 const transformCSV = (originalInput: Transaction[]) => {
-  const newCSV:CleanTransaction[] = [];
+  const newCSV:GroupedTransaction[] = [];
   // reverse original array to get transactions from new to old
   originalInput.reverse();
   // ignore last row (the headers)
@@ -71,9 +71,9 @@ const transformCSV = (originalInput: Transaction[]) => {
   return newCSV;
 }
 
-const prettyForSheets = (cleanTransactions: CleanTransaction[]) => {
+const prettyForSheets = (groupedTransactions: GroupedTransaction[]) => {
   const sheetsData: SheetsRow[] = [] 
-  cleanTransactions.map((row) => {
+  groupedTransactions.map((row) => {
     sheetsData.push({
       transactionDate: row.transactionDate,
       descriptionString: row.descriptions.join(', '),
