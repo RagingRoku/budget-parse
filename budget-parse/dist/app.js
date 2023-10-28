@@ -30,19 +30,11 @@ const express_1 = __importDefault(require("express"));
 const path = __importStar(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const csv_parse_1 = require("csv-parse");
+const constants_1 = require("./constants/constants");
 const app = (0, express_1.default)();
 const port = 3000;
 const csvFilePath = path.resolve(__dirname, '../src/data/transactions.csv');
 const fileContent = fs_1.default.readFileSync(csvFilePath, { encoding: 'utf-8' });
-const headers = [
-    'transactionDate',
-    'postedDate',
-    'CardNumber',
-    'description',
-    'category',
-    'debit',
-    'credit'
-];
 const transformCSV = (originalInput) => {
     const newCSV = [];
     // reverse original array to get transactions from new to old
@@ -72,13 +64,13 @@ const transformCSV = (originalInput) => {
     });
     return newCSV;
 };
-const prettyForSheets = (cleanTransactions) => {
+const prettyForSheets = (groupedTransactions) => {
     const sheetsData = [];
-    cleanTransactions.map((row) => {
+    groupedTransactions.map((row) => {
         sheetsData.push({
             transactionDate: row.transactionDate,
             descriptionString: row.descriptions.join(', '),
-            debitString: `= sum ( ${row.debits.join(' + ')} )`
+            debitString: `= ${row.debits.join(' + ')}`
         });
     });
     return sheetsData;
@@ -86,7 +78,7 @@ const prettyForSheets = (cleanTransactions) => {
 app.get('/', (req, res) => {
     (0, csv_parse_1.parse)(fileContent, {
         delimiter: ',',
-        columns: headers,
+        columns: constants_1.headers,
     }, (error, result) => {
         // console.log("Result", result);
         console.log("Result type", typeof result);
