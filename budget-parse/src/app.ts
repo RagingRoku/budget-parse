@@ -3,21 +3,12 @@ import * as path from 'path';
 import fs from 'fs';
 import { parse } from 'csv-parse';
 import { Transaction, GroupedTransaction, SheetsRow } from './constants/types';
+import { headers } from './constants/constants';
 
 const app = express();
 const port = 3000;
 const csvFilePath = path.resolve(__dirname, '../src/data/transactions.csv');
 const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
-
-const headers = [
-  'transactionDate',
-  'postedDate',
-  'CardNumber',
-  'description',
-  'category',
-  'debit',
-  'credit'
-];
 
 const transformCSV = (originalInput: Transaction[]) => {
   const newCSV:GroupedTransaction[] = [];
