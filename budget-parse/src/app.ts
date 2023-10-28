@@ -2,7 +2,7 @@ import express from 'express';
 import * as path from 'path';
 import fs from 'fs';
 import { parse } from 'csv-parse';
-
+import { Transaction, GroupedTransaction, SheetsRow } from './constants/types';
 
 const app = express();
 const port = 3000;
@@ -18,28 +18,6 @@ const headers = [
   'debit',
   'credit'
 ];
-
-type Transaction = {
-  transactionDate: string,
-  postedDate: string,
-  CardNumber: string,
-  description: string,
-  category: string,
-  debit: string,
-  credit: string
-};
-
-type GroupedTransaction = {
-  transactionDate: string,
-  descriptions: string[],
-  debits: string[],
-};
-
-type SheetsRow = {
-  transactionDate: string,
-  descriptionString: string,
-  debitString: string
-}
 
 const transformCSV = (originalInput: Transaction[]) => {
   const newCSV:GroupedTransaction[] = [];
