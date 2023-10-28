@@ -77,7 +77,7 @@ const prettyForSheets = (cleanTransactions: CleanTransaction[]) => {
     sheetsData.push({
       transactionDate: row.transactionDate,
       descriptionString: row.descriptions.join(', '),
-      debitString: `= sum ( ${row.debits.join(' + ')} )`
+      debitString: `= ${row.debits.join(' + ')}`
     });
   });
   return sheetsData;
