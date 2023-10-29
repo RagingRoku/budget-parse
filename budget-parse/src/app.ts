@@ -23,6 +23,23 @@ const formatOriginalDescription = (input: string) => {
   return newDescription
 }
 
+const createDescriptionString = (descriptions: string[]) => {
+  let descriptionCharCount = 0;
+  let combinedDescription = '';
+
+  descriptions.map((description) => {
+    descriptionCharCount += description.length;
+    if (descriptionCharCount < 40 ){
+      combinedDescription += `${description}, `
+    }
+    else {
+      combinedDescription += `\n${description}, `
+      descriptionCharCount = description.length;
+    }
+  });
+  return combinedDescription
+}
+
 const transformCSV = (originalInput: Transaction[]) => {
   const newCSV:GroupedTransaction[] = [];
   const ignoredTransactions:Transaction[] = [];
@@ -71,7 +88,7 @@ const prettyForSheets = (groupedTransactions: GroupedTransaction[]) => {
   groupedTransactions.map((row) => {
     sheetsData.push({
       postedDate: row.postedDate,
-      descriptionString: row.descriptions.join(', '),
+      descriptionString: createDescriptionString(row.descriptions),
       debitString: `= ${row.debits.join(' + ')}`
     });
   });
