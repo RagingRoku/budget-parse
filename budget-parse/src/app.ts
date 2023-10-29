@@ -15,6 +15,31 @@ const checkIgnoreTransaction = (description: string) => {
   return ignoreTransactions.some((ignoreItem) => compareText.includes(ignoreItem.toLowerCase()));
 };
 
+const formatOriginalDescription = (input: string) => {
+  const capitalDescription =
+    input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+
+  const newDescription = capitalDescription.replace(/\s\s+/g, ' ');
+  return newDescription
+}
+
+const createDescriptionString = (descriptions: string[]) => {
+  let descriptionCharCount = 0;
+  let combinedDescription = '';
+
+  descriptions.map((description) => {
+    descriptionCharCount += description.length;
+    if (descriptionCharCount < 40 ){
+      combinedDescription += `${description}, `
+    }
+    else {
+      combinedDescription += `\n${description}, `
+      descriptionCharCount = description.length;
+    }
+  });
+  return combinedDescription
+}
+
 const transformCSV = (originalInput: Transaction[]) => {
   const newCSV:GroupedTransaction[] = [];
   const ignoredTransactions:Transaction[] = [];
@@ -35,18 +60,21 @@ const transformCSV = (originalInput: Transaction[]) => {
       return;
     }
 
+    // format description
+    const formattedDescription = formatOriginalDescription(original.description);
+
     // row doesn't exist, map the whole object
     if (!transactionInNewCSV) {
       newCSV.push({
         postedDate: original.postedDate,
-        descriptions: [original.description],
+        descriptions: [formattedDescription],
         debits: [original.debit]
       })
     }
     // row exists, add description and debit
     if (transactionInNewCSV) {
       const matchingIndex = newCSV.findIndex((row) => row.postedDate == original.postedDate)
-      newCSV[matchingIndex].descriptions.push(original.description)
+      newCSV[matchingIndex].descriptions.push(formattedDescription)
       newCSV[matchingIndex].debits.push(original.debit)
     }
   });
@@ -60,7 +88,7 @@ const prettyForSheets = (groupedTransactions: GroupedTransaction[]) => {
   groupedTransactions.map((row) => {
     sheetsData.push({
       postedDate: row.postedDate,
-      descriptionString: row.descriptions.join(', '),
+      descriptionString: createDescriptionString(row.descriptions),
       debitString: `= ${row.debits.join(' + ')}`
     });
   });
