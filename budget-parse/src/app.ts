@@ -67,11 +67,27 @@ const prettyForSheets = (groupedTransactions: GroupedTransaction[]) => {
   return sheetsData;
 };
 
+const exportToCSV = (data: SheetsRow[]) => {
+  const destination = 'src/data/result.csv'
+  let csvData = '';
+  data.map((row) => { 
+    csvData += `${row.transactionDate},"${row.descriptionString}",${row.debitString}\n`
+  });
+  console.log('csvData', csvData);
+  fs.writeFile(destination, csvData, (err) => {
+    if (err) throw err;
+    console.log('The file has been saved!');
+  }); 
+}
+
 app.get('/', (req, res) => {
+
   parse(fileContent, {
     delimiter: ',',
     columns: headers,
   }, (error, result: Transaction[]) => {
+    if (error) throw error;
+
     // console.log("Result", result);
     // console.log("Result type", typeof result);
     const newResult = transformCSV(result);
@@ -82,6 +98,7 @@ app.get('/', (req, res) => {
     console.log("dataForSheets", dataForSheets);
     console.log("dataForSheets type", typeof dataForSheets);
 
+    exportToCSV(dataForSheets);
 
   });
   res.send(`Hello World!`);
