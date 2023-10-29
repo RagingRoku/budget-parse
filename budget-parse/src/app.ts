@@ -2,47 +2,23 @@ import express from 'express';
 import * as path from 'path';
 import fs from 'fs';
 import { parse } from 'csv-parse';
-
+import { Transaction, GroupedTransaction, SheetsRow } from './constants/types';
+import { headers, ignoreTransactions } from './constants/constants';
 
 const app = express();
 const port = 3000;
 const csvFilePath = path.resolve(__dirname, '../src/data/transactions.csv');
 const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
 
-const headers = [
-  'transactionDate',
-  'postedDate',
-  'CardNumber',
-  'description',
-  'category',
-  'debit',
-  'credit'
-];
-
-type Transaction = {
-  transactionDate: string,
-  postedDate: string,
-  CardNumber: string,
-  description: string,
-  category: string,
-  debit: string,
-  credit: string
+const checkIgnoreTransaction = (description: string) => {
+  const compareText = description.toLowerCase()
+  return ignoreTransactions.some((ignoreItem) => compareText.includes(ignoreItem.toLowerCase()));
 };
-
-type GroupedTransaction = {
-  transactionDate: string,
-  descriptions: string[],
-  debits: string[],
-};
-
-type SheetsRow = {
-  transactionDate: string,
-  descriptionString: string,
-  debitString: string
-}
 
 const transformCSV = (originalInput: Transaction[]) => {
   const newCSV:GroupedTransaction[] = [];
+  const ignoredTransactions:Transaction[] = [];
+
   // reverse original array to get transactions from new to old
   originalInput.reverse();
   // ignore last row (the headers)
@@ -52,22 +28,30 @@ const transformCSV = (originalInput: Transaction[]) => {
       console.log('no debit');
       return;
     }
-    const transactionInNewCSV = newCSV.some((row) => row.transactionDate.includes(original.transactionDate))
+    const transactionInNewCSV = newCSV.some((row) => row.postedDate.includes(original.postedDate))
+    const ignoreTransaction = checkIgnoreTransaction(original.description);
+    if(ignoreTransaction){
+      ignoredTransactions.push(original)
+      return;
+    }
+
     // row doesn't exist, map the whole object
     if (!transactionInNewCSV) {
       newCSV.push({
-        transactionDate: original.transactionDate,
+        postedDate: original.postedDate,
         descriptions: [original.description],
         debits: [original.debit]
       })
     }
     // row exists, add description and debit
     if (transactionInNewCSV) {
-      const matchingIndex = newCSV.findIndex((row) => row.transactionDate == original.transactionDate)
+      const matchingIndex = newCSV.findIndex((row) => row.postedDate == original.postedDate)
       newCSV[matchingIndex].descriptions.push(original.description)
       newCSV[matchingIndex].debits.push(original.debit)
     }
   });
+
+  console.log("ignoredTransactions", ignoredTransactions);
   return newCSV;
 }
 
@@ -75,7 +59,7 @@ const prettyForSheets = (groupedTransactions: GroupedTransaction[]) => {
   const sheetsData: SheetsRow[] = [] 
   groupedTransactions.map((row) => {
     sheetsData.push({
-      transactionDate: row.transactionDate,
+      postedDate: row.postedDate,
       descriptionString: row.descriptions.join(', '),
       debitString: `= ${row.debits.join(' + ')}`
     });
@@ -83,24 +67,34 @@ const prettyForSheets = (groupedTransactions: GroupedTransaction[]) => {
   return sheetsData;
 };
 
+const exportToCSV = (data: SheetsRow[]) => {
+  const destination = 'src/data/result.csv'
+  let csvData = '';
+  data.map((row) => { 
+    csvData += `${row.postedDate},"${row.descriptionString}",${row.debitString}\n`
+  });
+  console.log('csvData', csvData);
+  fs.writeFile(destination, csvData, (err) => {
+    if (err) throw err;
+    console.log('The file has been saved!');
+  }); 
+}
+
 app.get('/', (req, res) => {
+
   parse(fileContent, {
     delimiter: ',',
     columns: headers,
   }, (error, result: Transaction[]) => {
-    // console.log("Result", result);
-    console.log("Result type", typeof result);
+    if (error) throw error;
+
     const newResult = transformCSV(result);
-    console.log("newResult", newResult);
-    console.log("newResult type", typeof newResult);
-
     const dataForSheets = prettyForSheets(newResult);
-    console.log("dataForSheets", dataForSheets);
-    console.log("dataForSheets type", typeof dataForSheets);
 
+    exportToCSV(dataForSheets);
 
   });
-  res.send(`Hello World!`);
+  res.send(`Hello World! Please check your local for transformed csv`);
 });
 
 app.listen(port, () => {
