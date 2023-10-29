@@ -3,15 +3,22 @@ import * as path from 'path';
 import fs from 'fs';
 import { parse } from 'csv-parse';
 import { Transaction, GroupedTransaction, SheetsRow } from './constants/types';
-import { headers } from './constants/constants';
+import { headers, ignoreTransactions } from './constants/constants';
 
 const app = express();
 const port = 3000;
 const csvFilePath = path.resolve(__dirname, '../src/data/transactions.csv');
 const fileContent = fs.readFileSync(csvFilePath, { encoding: 'utf-8' });
 
+const checkIgnoreTransaction = (description: string) => {
+  const compareText = description.toLowerCase()
+  return ignoreTransactions.some((ignoreItem) => compareText.includes(ignoreItem.toLowerCase()));
+};
+
 const transformCSV = (originalInput: Transaction[]) => {
   const newCSV:GroupedTransaction[] = [];
+  const ignoredTransactions:Transaction[] = [];
+
   // reverse original array to get transactions from new to old
   originalInput.reverse();
   // ignore last row (the headers)
@@ -22,6 +29,12 @@ const transformCSV = (originalInput: Transaction[]) => {
       return;
     }
     const transactionInNewCSV = newCSV.some((row) => row.transactionDate.includes(original.transactionDate))
+    const ignoreTransaction = checkIgnoreTransaction(original.description);
+    if(ignoreTransaction){
+      ignoredTransactions.push(original)
+      return;
+    }
+
     // row doesn't exist, map the whole object
     if (!transactionInNewCSV) {
       newCSV.push({
@@ -37,6 +50,8 @@ const transformCSV = (originalInput: Transaction[]) => {
       newCSV[matchingIndex].debits.push(original.debit)
     }
   });
+
+  console.log("ignoredTransactions", ignoredTransactions);
   return newCSV;
 }
 
@@ -58,10 +73,10 @@ app.get('/', (req, res) => {
     columns: headers,
   }, (error, result: Transaction[]) => {
     // console.log("Result", result);
-    console.log("Result type", typeof result);
+    // console.log("Result type", typeof result);
     const newResult = transformCSV(result);
-    console.log("newResult", newResult);
-    console.log("newResult type", typeof newResult);
+    // console.log("newResult", newResult);
+    // console.log("newResult type", typeof newResult);
 
     const dataForSheets = prettyForSheets(newResult);
     console.log("dataForSheets", dataForSheets);
