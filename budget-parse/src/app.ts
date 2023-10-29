@@ -15,6 +15,14 @@ const checkIgnoreTransaction = (description: string) => {
   return ignoreTransactions.some((ignoreItem) => compareText.includes(ignoreItem.toLowerCase()));
 };
 
+const formatDescriptionString = (input: string) => {
+  const capitalDescription =
+    input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
+
+  const newDescription = capitalDescription.replace(/\s\s+/g, ' ');
+  return newDescription
+}
+
 const transformCSV = (originalInput: Transaction[]) => {
   const newCSV:GroupedTransaction[] = [];
   const ignoredTransactions:Transaction[] = [];
@@ -35,18 +43,21 @@ const transformCSV = (originalInput: Transaction[]) => {
       return;
     }
 
+    // format description
+    const formattedDescription = formatDescriptionString(original.description);
+
     // row doesn't exist, map the whole object
     if (!transactionInNewCSV) {
       newCSV.push({
         postedDate: original.postedDate,
-        descriptions: [original.description],
+        descriptions: [formattedDescription],
         debits: [original.debit]
       })
     }
     // row exists, add description and debit
     if (transactionInNewCSV) {
       const matchingIndex = newCSV.findIndex((row) => row.postedDate == original.postedDate)
-      newCSV[matchingIndex].descriptions.push(original.description)
+      newCSV[matchingIndex].descriptions.push(formattedDescription)
       newCSV[matchingIndex].debits.push(original.debit)
     }
   });
