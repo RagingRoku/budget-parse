@@ -15,7 +15,7 @@ const checkIgnoreTransaction = (description: string) => {
   return ignoreTransactions.some((ignoreItem) => compareText.includes(ignoreItem.toLowerCase()));
 };
 
-const formatDescriptionString = (input: string) => {
+const formatOriginalDescription = (input: string) => {
   const capitalDescription =
     input.charAt(0).toUpperCase() + input.slice(1).toLowerCase();
 
@@ -44,7 +44,7 @@ const transformCSV = (originalInput: Transaction[]) => {
     }
 
     // format description
-    const formattedDescription = formatDescriptionString(original.description);
+    const formattedDescription = formatOriginalDescription(original.description);
 
     // row doesn't exist, map the whole object
     if (!transactionInNewCSV) {
