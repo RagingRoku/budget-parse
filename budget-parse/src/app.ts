@@ -88,20 +88,13 @@ app.get('/', (req, res) => {
   }, (error, result: Transaction[]) => {
     if (error) throw error;
 
-    // console.log("Result", result);
-    // console.log("Result type", typeof result);
     const newResult = transformCSV(result);
-    // console.log("newResult", newResult);
-    // console.log("newResult type", typeof newResult);
-
     const dataForSheets = prettyForSheets(newResult);
-    console.log("dataForSheets", dataForSheets);
-    console.log("dataForSheets type", typeof dataForSheets);
 
     exportToCSV(dataForSheets);
 
   });
-  res.send(`Hello World!`);
+  res.send(`Hello World! Please check your local for transformed csv`);
 });
 
 app.listen(port, () => {
