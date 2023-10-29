@@ -9,13 +9,13 @@ export type Transaction = {
 };
 
 export type GroupedTransaction = {
-    transactionDate: string,
+    postedDate: string,
     descriptions: string[],
     debits: string[],
 };
 
 export type SheetsRow = {
-    transactionDate: string,
+    postedDate: string,
     descriptionString: string,
     debitString: string
 };

@@ -28,7 +28,7 @@ const transformCSV = (originalInput: Transaction[]) => {
       console.log('no debit');
       return;
     }
-    const transactionInNewCSV = newCSV.some((row) => row.transactionDate.includes(original.transactionDate))
+    const transactionInNewCSV = newCSV.some((row) => row.postedDate.includes(original.postedDate))
     const ignoreTransaction = checkIgnoreTransaction(original.description);
     if(ignoreTransaction){
       ignoredTransactions.push(original)
@@ -38,14 +38,14 @@ const transformCSV = (originalInput: Transaction[]) => {
     // row doesn't exist, map the whole object
     if (!transactionInNewCSV) {
       newCSV.push({
-        transactionDate: original.transactionDate,
+        postedDate: original.postedDate,
         descriptions: [original.description],
         debits: [original.debit]
       })
     }
     // row exists, add description and debit
     if (transactionInNewCSV) {
-      const matchingIndex = newCSV.findIndex((row) => row.transactionDate == original.transactionDate)
+      const matchingIndex = newCSV.findIndex((row) => row.postedDate == original.postedDate)
       newCSV[matchingIndex].descriptions.push(original.description)
       newCSV[matchingIndex].debits.push(original.debit)
     }
@@ -59,7 +59,7 @@ const prettyForSheets = (groupedTransactions: GroupedTransaction[]) => {
   const sheetsData: SheetsRow[] = [] 
   groupedTransactions.map((row) => {
     sheetsData.push({
-      transactionDate: row.transactionDate,
+      postedDate: row.postedDate,
       descriptionString: row.descriptions.join(', '),
       debitString: `= ${row.debits.join(' + ')}`
     });
@@ -71,7 +71,7 @@ const exportToCSV = (data: SheetsRow[]) => {
   const destination = 'src/data/result.csv'
   let csvData = '';
   data.map((row) => { 
-    csvData += `${row.transactionDate},"${row.descriptionString}",${row.debitString}\n`
+    csvData += `${row.postedDate},"${row.descriptionString}",${row.debitString}\n`
   });
   console.log('csvData', csvData);
   fs.writeFile(destination, csvData, (err) => {
