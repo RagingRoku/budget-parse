@@ -26,14 +26,15 @@ const formatOriginalDescription = (input: string) => {
 const createDescriptionString = (descriptions: string[]) => {
   let descriptionCharCount = 0;
   let combinedDescription = '';
+  const lastIndex = descriptions.length - 1;
 
-  descriptions.map((description) => {
+  descriptions.map((description, index) => {
     descriptionCharCount += description.length;
     if (descriptionCharCount < 40 ){
-      combinedDescription += `${description}, `
+      combinedDescription += index == lastIndex ? `${description}` : `${description}, `
     }
     else {
-      combinedDescription += `\n${description}, `
+      combinedDescription += index == lastIndex ? `\n${description}` : `\n${description}, `
       descriptionCharCount = description.length;
     }
   });
