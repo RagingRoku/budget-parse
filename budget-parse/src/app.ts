@@ -114,6 +114,7 @@ app.get('/', (req, res) => {
   parse(fileContent, {
     delimiter: ',',
     columns: headers,
+    skipRecordsWithError: true
   }, (error, result: Transaction[]) => {
     if (error) throw error;
 
