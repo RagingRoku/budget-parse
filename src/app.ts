@@ -51,7 +51,7 @@ const transformCSV = (originalInput: Transaction[]) => {
   originalInput.slice(0, -1).map((original) => {
     // ignore row if no debit
     if (!original.debit){
-      console.log('no debit');
+      console.log('not a debit transaction');
       return;
     }
     const transactionInNewCSV = newCSV.some((row) => row.postedDate.includes(original.postedDate))
